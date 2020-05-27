@@ -1,7 +1,7 @@
 # Личный проект «Кексобукинг» [![Build status][travis-image]][travis-url]
 
 * Студент: [Юля Марта](https://up.htmlacademy.ru/javascript/20/user/1237807).
-* Наставник: `Неизвестно`.
+* Наставник: [Евгений Лепёшкин](https://up.htmlacademy.ru/javascript/20/user/144641).
 
 ---
 
