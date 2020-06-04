@@ -1,15 +1,11 @@
 'use strict';
 
-var advertsCount = 8;
-var map = document.querySelector('.map');
-var mapPinsList = map.querySelector('.map__pins');
-
-var mapPinTemplate = document.querySelector('#pin')
-  .content
-  .querySelector('.map__pin');
-
-var mapPinWidth = document.querySelector('.map__pin').offsetWidth;
-var mapPinHeight = document.querySelector('.map__pin').offsetHeight;
+var ADVERTS_COUNT = 8;
+var MAX_PRIXE = 10000;
+var MAX_ROOMS = 5;
+var MAX_GUESTS = 10;
+var MIN_COORDINATEY = 130;
+var MAX_COORDINATEY = 630;
 
 var TITLES = ['Уютное гнездышко для молодоженов', 'Маленькая квартирка рядом с парком', 'Небольшая лавочка в парке', 'Императорский дворец в центре Токио', 'Милейший чердачок', 'Наркоманский притон', 'Чёткая хата', 'Стандартная квартира в центре'];
 var TYPES = ['palace', 'flat', 'house', 'bungalo'];
@@ -18,13 +14,20 @@ var FEATURES = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditio
 var DESCRIPTIONS = ['Великолепный таун-хауз в центре Токио', 'Маленькая чистая квартира на краю парка', 'Великолепная лавочка прямо в центре парка', 'Замечательный дворец в старинном центре города', 'Маленькая квартирка на чердаке', 'У нас есть всё! Шприцы, интернет, кофе', 'У нас тут все ништяк', 'Тут красиво, светло и уютно'];
 var PHOTOS = ['http://o0.github.io/assets/images/tokyo/hotel1.jpg', 'http://o0.github.io/assets/images/tokyo/hotel2.jpg', 'http://o0.github.io/assets/images/tokyo/hotel3.jpg'];
 
-var MAX_PRIXE = 10000;
-var MAX_ROOMS = 5;
-var MAX_GUESTS = 10;
-var MIN_COORDINATEX = 1 + mapPinWidth;
-var MAX_COORDINATEX = map.offsetWidth - mapPinWidth;
-var MIN_COORDINATEY = 130;
-var MAX_COORDINATEY = 630;
+var map = document.querySelector('.map');
+var mapPinsList = map.querySelector('.map__pins');
+
+var mapPinTemplate = document.querySelector('#pin')
+  .content
+  .querySelector('.map__pin');
+var mapPinElement = document.querySelector('.map__pin');
+
+var mapPinWidth = mapPinElement.offsetWidth;
+var mapPinHeight = mapPinElement.offsetHeight;
+
+var minCoordinateX = 1 + mapPinWidth;
+var maxCoordinateX = map.offsetWidth - mapPinWidth;
+
 
 // функция случайного выбора
 
@@ -56,7 +59,7 @@ var getAdverts = function (count) {
       },
       offer: {
         title: TITLES[i],
-        address: location.x + ', ' + location.y,
+        address: getRandomInt(minCoordinateX, maxCoordinateX) + ', ' + getRandomInt(MIN_COORDINATEY, MAX_COORDINATEY),
         price: getRandomInt(1, MAX_PRIXE),
         type: TYPES[getRandomInt(0, TYPES.length - 1)],
         rooms: getRandomInt(1, MAX_ROOMS),
@@ -68,7 +71,7 @@ var getAdverts = function (count) {
         photos: shuffleArray(PHOTOS).slice(0, getRandomInt(1, PHOTOS.length))
       },
       location: {
-        x: getRandomInt(MIN_COORDINATEX, MAX_COORDINATEX),
+        x: getRandomInt(minCoordinateX, maxCoordinateX),
         y: getRandomInt(MIN_COORDINATEY, MAX_COORDINATEY)
       }
     };
@@ -79,7 +82,7 @@ var getAdverts = function (count) {
 
 // создание массива с объявлениями
 
-var adverts = getAdverts(advertsCount);
+var adverts = getAdverts(ADVERTS_COUNT);
 
 // функция создания метки на основе объекта из массива с объявлениями
 
