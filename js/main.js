@@ -86,8 +86,8 @@ var adverts = getAdverts(advertsCount);
 var renderMapPin = function (advert) {
   var mapPin = mapPinTemplate.cloneNode(true);
 
-  mapPin.style.left = advert.location.x + mapPinWidth / 2 + 'px';
-  mapPin.style.top = advert.location.y + mapPinHeight / 2 + 'px';
+  mapPin.style.left = advert.location.x - mapPinWidth / 2 + 'px';
+  mapPin.style.top = advert.location.y - mapPinHeight / 2 + 'px';
   mapPin.querySelector('img').src = advert.author.avatar;
   mapPin.querySelector('img').alt = advert.offer.title;
 
