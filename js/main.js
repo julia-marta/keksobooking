@@ -167,56 +167,56 @@ var renderCard = function (advert) {
   var advertCardAvatar = advertCard.querySelector('.popup__avatar');
 
   if (advert.offer.title.length === 0) {
-    advertCardTitle.innerHTML = '';
+    advertCardTitle.classList.add('hidden');
   } else {
     advertCardTitle.textContent = advert.offer.title;
   }
 
   if (advert.offer.address.length === 0) {
-    advertCardAddress.innerHTML = '';
+    advertCardAddress.classList.add('hidden');
   } else {
     advertCardAddress.textContent = advert.offer.address;
   }
 
   if (advert.offer.price === 0) {
-    advertCardPrice.innerHTML = '';
+    advertCardPrice.classList.add('hidden');
   } else {
     advertCardPrice.textContent = advert.offer.price + ' ₽/ночь';
   }
 
   if (advert.offer.type.length === 0) {
-    advertCardType.innerHTML = '';
+    advertCardType.classList.add('hidden');
   } else {
     advertCardType.textContent = typesKeys[advert.offer.type];
   }
 
   if (advert.offer.rooms === 0 && advert.offer.guests === 0) {
-    advertCardCapacity.innerHTML = '';
+    advertCardCapacity.classList.add('hidden');
   } else {
     advertCardCapacity.textContent = ((advert.offer.rooms !== 0) ? advert.offer.rooms + ' комнаты' : '') + ((advert.offer.guests !== 0) ? ' для ' + advert.offer.guests + ' гостей' : '');
   }
 
   if (advert.offer.checkin.length === 0 && advert.offer.checkout.length === 0) {
-    advertCardTime.innerHTML = '';
+    advertCardTime.classList.add('hidden');
   } else {
     advertCardTime.textContent = ((advert.offer.checkin.length !== 0) ? 'Заезд после ' + advert.offer.checkin : '') + ((advert.offer.checkout.length !== 0) ? ' выезд до' + advert.offer.checkout : '');
   }
 
   if (advert.offer.features.length === 0) {
-    advertCardFeatures.innerHTML = '';
+    advertCardFeatures.classList.add('hidden');
   } else {
     advertCardFeatures.innerHTML = '';
     advertCardFeatures.appendChild(renderFeatures(advert));
   }
 
   if (advert.offer.description.length === 0) {
-    advertCardDescription.innerHTML = '';
+    advertCardDescription.classList.add('hidden');
   } else {
     advertCardDescription.textContent = advert.offer.description;
   }
 
   if (advert.offer.photos.length === 0) {
-    advertCardPhotos.innerHTML = '';
+    advertCardPhotos.classList.add('hidden');
   } else {
     advertCardPhotos.innerHTML = '';
     advertCardPhotos.appendChild(renderPhotos(advert));
