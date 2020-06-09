@@ -61,11 +61,12 @@ function shuffleArray(arr) {
 
 // функция создания массива с объявлениями-объектами
 
-var getAdverts = function (count) {
-  var advertsArr = [];
+var adverts = [];
 
-  for (var i = 0; i < count; i++) {
-    advertsArr[i] = {
+var getAdverts = function () {
+
+  for (var i = 0; i < ADVERTS_COUNT; i++) {
+    adverts.push({
       author: {
         avatar: 'img/avatars/user' + '0' + [i + 1] + '.png'
       },
@@ -86,15 +87,13 @@ var getAdverts = function (count) {
         x: getRandomInt(minCoordinateX, maxCoordinateX),
         y: getRandomInt(MIN_COORDINATEY, MAX_COORDINATEY)
       }
-    };
+    });
   }
-
-  return advertsArr;
 };
 
 // создание массива с объявлениями
 
-var adverts = getAdverts(ADVERTS_COUNT);
+getAdverts();
 
 // функция создания метки на основе объекта из массива с объявлениями
 
@@ -102,7 +101,7 @@ var renderMapPin = function (advert) {
   var mapPin = mapPinTemplate.cloneNode(true);
 
   mapPin.style.left = advert.location.x - mapPinWidth / 2 + 'px';
-  mapPin.style.top = advert.location.y - mapPinHeight / 2 + 'px';
+  mapPin.style.top = advert.location.y - mapPinHeight + 'px';
   mapPin.querySelector('img').src = advert.author.avatar;
   mapPin.querySelector('img').alt = advert.offer.title;
 
@@ -229,13 +228,12 @@ var renderCard = function (advert) {
 
 // функция вставки созданной карточки на карту
 
-var createCard = function (arr, i) {
+var createCard = function (arr) {
   var card = document.createDocumentFragment();
-  card.appendChild(renderCard(arr[i]));
-
+  card.appendChild(renderCard(arr[0]));
   return map.insertBefore(card, mapContainer);
 };
 
 // создание карточки объявления
 
-createCard(adverts, 0);
+createCard(adverts);
