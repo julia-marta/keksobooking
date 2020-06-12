@@ -6,6 +6,8 @@ var MAX_ROOMS = 5;
 var MAX_GUESTS = 10;
 var MIN_COORDINATEY = 130;
 var MAX_COORDINATEY = 630;
+var MAIN_MOUSE_BUTTON = 0;
+var ENTER_KEY = 'Enter';
 
 var TITLES = ['Уютное гнездышко для молодоженов', 'Маленькая квартирка рядом с парком', 'Небольшая лавочка в парке', 'Императорский дворец в центре Токио', 'Милейший чердачок', 'Наркоманский притон', 'Чёткая хата', 'Стандартная квартира в центре'];
 var TYPES = ['palace', 'flat', 'house', 'bungalo'];
@@ -14,9 +16,29 @@ var FEATURES = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditio
 var DESCRIPTIONS = ['Великолепный таун-хауз в центре Токио', 'Маленькая чистая квартира на краю парка', 'Великолепная лавочка прямо в центре парка', 'Замечательный дворец в старинном центре города', 'Маленькая квартирка на чердаке', 'У нас есть всё! Шприцы, интернет, кофе', 'У нас тут все ништяк', 'Тут красиво, светло и уютно'];
 var PHOTOS = ['http://o0.github.io/assets/images/tokyo/hotel1.jpg', 'http://o0.github.io/assets/images/tokyo/hotel2.jpg', 'http://o0.github.io/assets/images/tokyo/hotel3.jpg'];
 
+var typesKeys = {
+  palace: 'Дворец',
+  flat: 'Квартира',
+  house: 'Дом',
+  bungalo: 'Бунгало'
+};
+
+var guestsInRooms = {
+  1: ['1'],
+  2: ['1', '2'],
+  3: ['1', '2', '3'],
+  100: ['0']
+};
+
 var map = document.querySelector('.map');
 var mapPinsList = map.querySelector('.map__pins');
 var mapContainer = document.querySelector('.map__filters-container');
+
+var mapPinMain = map.querySelector('.map__pin--main');
+var mapPinMainWidth = mapPinMain.offsetWidth;
+var mapPinMainHeight = mapPinMain.offsetHeight;
+var mapPinMainX = parseInt(mapPinMain.style.left, 10);
+var mapPinMainY = parseInt(mapPinMain.style.top, 10);
 
 var mapPinTemplate = document.querySelector('#pin')
   .content
@@ -34,22 +56,46 @@ var cardTemplate = document.querySelector('#card')
 .querySelector('.map__card');
 var photoTemplate = cardTemplate.querySelector('.popup__photo');
 
-var typesKeys = {
-  palace: 'Дворец',
-  flat: 'Квартира',
-  house: 'Дом',
-  bungalo: 'Бунгало'
+var form = document.querySelector('.ad-form');
+var fieldsets = form.querySelectorAll('fieldset');
+var addressField = form.querySelector('#address');
+var roomsSelect = form.querySelector('#room_number');
+var guestsSelect = form.querySelector('#capacity');
+
+// функция отключения/активации полей формы
+
+var setFieldsState = function () {
+  for (var i = 0; i < fieldsets.length; i++) {
+    fieldsets[i].disabled = !fieldsets[i].disabled;
+  }
 };
+
+// функция заполнения поля адреса
+
+var setAddressValue = function () {
+  var addressX = Math.floor(mapPinMainX + mapPinMainWidth / 2);
+  var addressY = form.classList.contains('ad-form--disabled') ? Math.floor(mapPinMainY + mapPinMainHeight / 2) : Math.floor(mapPinMainY + mapPinMainHeight);
+
+  addressField.value = addressX + ', ' + addressY;
+};
+
+// отключение полей формы при неактивном состоянии карты
+
+setFieldsState();
+
+// заполнение поля адреса при неактивном состоянии карты
+
+setAddressValue();
 
 // функция случайного выбора
 
-function getRandomInt(min, max) {
+var getRandomInt = function (min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+};
 
 // функция перемешивания массива
 
-function shuffleArray(arr) {
+var shuffleArray = function (arr) {
   for (var i = arr.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
     var temp = arr[i];
@@ -57,17 +103,18 @@ function shuffleArray(arr) {
     arr[j] = temp;
   }
   return arr;
-}
+};
 
 // функция создания массива с объявлениями-объектами
 
-var getAdverts = function (count) {
-  var advertsArr = [];
+var adverts = [];
 
-  for (var i = 0; i < count; i++) {
-    advertsArr[i] = {
+var getAdverts = function () {
+
+  for (var i = 0; i < ADVERTS_COUNT; i++) {
+    adverts.push({
       author: {
-        avatar: 'img/avatars/user' + '0' + [i + 1] + '.png'
+        avatar: 'img/avatars/user0' + (i + 1) + '.png'
       },
       offer: {
         title: TITLES[i],
@@ -86,15 +133,13 @@ var getAdverts = function (count) {
         x: getRandomInt(minCoordinateX, maxCoordinateX),
         y: getRandomInt(MIN_COORDINATEY, MAX_COORDINATEY)
       }
-    };
+    });
   }
-
-  return advertsArr;
 };
 
 // создание массива с объявлениями
 
-var adverts = getAdverts(ADVERTS_COUNT);
+getAdverts();
 
 // функция создания метки на основе объекта из массива с объявлениями
 
@@ -102,7 +147,7 @@ var renderMapPin = function (advert) {
   var mapPin = mapPinTemplate.cloneNode(true);
 
   mapPin.style.left = advert.location.x - mapPinWidth / 2 + 'px';
-  mapPin.style.top = advert.location.y - mapPinHeight / 2 + 'px';
+  mapPin.style.top = advert.location.y - mapPinHeight + 'px';
   mapPin.querySelector('img').src = advert.author.avatar;
   mapPin.querySelector('img').alt = advert.offer.title;
 
@@ -120,10 +165,63 @@ var createPin = function (arr) {
   return mapPinsList.appendChild(pin);
 };
 
-// перевод карты в активный режим и отрисовка меток с объявлениями
+// обработчик клика левой кнопкой мышки на главном пине
 
-map.classList.remove('map--faded');
-createPin(adverts);
+var onPinMouseDown = function (evt) {
+  if (evt.button === MAIN_MOUSE_BUTTON) {
+    activateMap();
+  }
+};
+
+// обработчик нажатия на Enter на главном пине
+
+var onPinEnterPress = function (evt) {
+  if (evt.key === ENTER_KEY) {
+    activateMap();
+  }
+};
+
+// функция перевода карты в активное состояние + активация полей формы + заполнение поля с адресом + отрисовка меток с объявлениями + удаление обработчиков
+
+var activateMap = function () {
+  map.classList.remove('map--faded');
+  form.classList.remove('ad-form--disabled');
+  setFieldsState();
+  setAddressValue();
+  createPin(adverts);
+  createCard();
+  mapPinMain.removeEventListener('mousedown', onPinMouseDown);
+  mapPinMain.removeEventListener('keydown', onPinEnterPress);
+};
+
+// добавление обработчиков на главный пин
+
+mapPinMain.addEventListener('mousedown', onPinMouseDown);
+mapPinMain.addEventListener('keydown', onPinEnterPress);
+
+// функция проверки соответствия количества гостей количеству комнат
+
+var checkGuestsNumber = function () {
+  if (guestsSelect.options.length > 0) { // проверяем, что в селекторе есть поля
+    [].forEach.call(guestsSelect.options, function (item) { // перебираем все значения полей с числом гостей
+      var roomsNumber = roomsSelect.value; // определяем выбранное число комнат
+      var guestsNumber = guestsInRooms[roomsNumber]; // берём массив с возможным числом гостей, соответствующий этому выбранному числу комнат
+      var isDisabled = !(guestsNumber.indexOf(item.value) >= 0); // ищем в этом массиве с гостями число, соответствующее значению поля с числом гостей, а если его там нет, то записываем его в переменную
+
+      item.selected = guestsNumber[0] === item.value; // устанавливаем в выбранное поле с числом гостей первое возможное значение
+      item.disabled = isDisabled; // отключаем поля, значения которых не найдены в нужном массиве
+      item.hidden = isDisabled; // скрываем поля, значения которых не найдены в нужном массиве
+    });
+  }
+};
+
+// проверка соответствия количества гостей количеству комнат при активации страницы (до выбора пользователем)
+
+checkGuestsNumber();
+
+// обработчик выбора количества комнат
+
+roomsSelect.addEventListener('change', checkGuestsNumber);
 
 // функция вывода доступных удобств из объявления
 
@@ -229,13 +327,8 @@ var renderCard = function (advert) {
 
 // функция вставки созданной карточки на карту
 
-var createCard = function (arr, i) {
+var createCard = function () {
   var card = document.createDocumentFragment();
-  card.appendChild(renderCard(arr[i]));
-
+  card.appendChild(renderCard(adverts[0]));
   return map.insertBefore(card, mapContainer);
 };
-
-// создание карточки объявления
-
-createCard(adverts, 0);
