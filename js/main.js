@@ -8,6 +8,7 @@ var MIN_COORDINATEY = 130;
 var MAX_COORDINATEY = 630;
 var MAIN_MOUSE_BUTTON = 0;
 var ENTER_KEY = 'Enter';
+var ESC_KEY = 'Escape';
 
 var TITLES = ['Уютное гнездышко для молодоженов', 'Маленькая квартирка рядом с парком', 'Небольшая лавочка в парке', 'Императорский дворец в центре Токио', 'Милейший чердачок', 'Наркоманский притон', 'Чёткая хата', 'Стандартная квартира в центре'];
 var TYPES = ['palace', 'flat', 'house', 'bungalo'];
@@ -17,10 +18,22 @@ var DESCRIPTIONS = ['Великолепный таун-хауз в центре 
 var PHOTOS = ['http://o0.github.io/assets/images/tokyo/hotel1.jpg', 'http://o0.github.io/assets/images/tokyo/hotel2.jpg', 'http://o0.github.io/assets/images/tokyo/hotel3.jpg'];
 
 var typesKeys = {
-  palace: 'Дворец',
-  flat: 'Квартира',
-  house: 'Дом',
-  bungalo: 'Бунгало'
+  palace: {
+    ru: 'Дворец',
+    min: 10000
+  },
+  flat: {
+    ru: 'Квартира',
+    min: 1000
+  },
+  house: {
+    ru: 'Дом',
+    min: 5000
+  },
+  bungalo: {
+    ru: 'Бунгало',
+    min: 0
+  }
 };
 
 var guestsInRooms = {
@@ -61,6 +74,10 @@ var fieldsets = form.querySelectorAll('fieldset');
 var addressField = form.querySelector('#address');
 var roomsSelect = form.querySelector('#room_number');
 var guestsSelect = form.querySelector('#capacity');
+var typeSelect = form.querySelector('#type');
+var priceInput = form.querySelector('#price');
+var checkinInput = form.querySelector('#timein');
+var checkoutInput = form.querySelector('#timeout');
 
 // функция отключения/активации полей формы
 
@@ -141,88 +158,6 @@ var getAdverts = function () {
 
 getAdverts();
 
-// функция создания метки на основе объекта из массива с объявлениями
-
-var renderMapPin = function (advert) {
-  var mapPin = mapPinTemplate.cloneNode(true);
-
-  mapPin.style.left = advert.location.x - mapPinWidth / 2 + 'px';
-  mapPin.style.top = advert.location.y - mapPinHeight + 'px';
-  mapPin.querySelector('img').src = advert.author.avatar;
-  mapPin.querySelector('img').alt = advert.offer.title;
-
-  return mapPin;
-};
-
-// функция отрисовки созданных меток на карте
-
-var createPin = function (arr) {
-  var pin = document.createDocumentFragment();
-  for (var i = 0; i < arr.length; i++) {
-    pin.appendChild(renderMapPin(arr[i]));
-  }
-
-  return mapPinsList.appendChild(pin);
-};
-
-// обработчик клика левой кнопкой мышки на главном пине
-
-var onPinMouseDown = function (evt) {
-  if (evt.button === MAIN_MOUSE_BUTTON) {
-    activateMap();
-  }
-};
-
-// обработчик нажатия на Enter на главном пине
-
-var onPinEnterPress = function (evt) {
-  if (evt.key === ENTER_KEY) {
-    activateMap();
-  }
-};
-
-// функция перевода карты в активное состояние + активация полей формы + заполнение поля с адресом + отрисовка меток с объявлениями + удаление обработчиков
-
-var activateMap = function () {
-  map.classList.remove('map--faded');
-  form.classList.remove('ad-form--disabled');
-  setFieldsState();
-  setAddressValue();
-  createPin(adverts);
-  createCard();
-  mapPinMain.removeEventListener('mousedown', onPinMouseDown);
-  mapPinMain.removeEventListener('keydown', onPinEnterPress);
-};
-
-// добавление обработчиков на главный пин
-
-mapPinMain.addEventListener('mousedown', onPinMouseDown);
-mapPinMain.addEventListener('keydown', onPinEnterPress);
-
-// функция проверки соответствия количества гостей количеству комнат
-
-var checkGuestsNumber = function () {
-  if (guestsSelect.options.length > 0) { // проверяем, что в селекторе есть поля
-    [].forEach.call(guestsSelect.options, function (item) { // перебираем все значения полей с числом гостей
-      var roomsNumber = roomsSelect.value; // определяем выбранное число комнат
-      var guestsNumber = guestsInRooms[roomsNumber]; // берём массив с возможным числом гостей, соответствующий этому выбранному числу комнат
-      var isDisabled = !(guestsNumber.indexOf(item.value) >= 0); // ищем в этом массиве с гостями число, соответствующее значению поля с числом гостей, а если его там нет, то записываем его в переменную
-
-      item.selected = guestsNumber[0] === item.value; // устанавливаем в выбранное поле с числом гостей первое возможное значение
-      item.disabled = isDisabled; // отключаем поля, значения которых не найдены в нужном массиве
-      item.hidden = isDisabled; // скрываем поля, значения которых не найдены в нужном массиве
-    });
-  }
-};
-
-// проверка соответствия количества гостей количеству комнат при активации страницы (до выбора пользователем)
-
-checkGuestsNumber();
-
-// обработчик выбора количества комнат
-
-roomsSelect.addEventListener('change', checkGuestsNumber);
-
 // функция вывода доступных удобств из объявления
 
 var renderFeatures = function (advert) {
@@ -285,7 +220,7 @@ var renderCard = function (advert) {
   if (advert.offer.type.length === 0) {
     advertCardType.classList.add('hidden');
   } else {
-    advertCardType.textContent = typesKeys[advert.offer.type];
+    advertCardType.textContent = typesKeys[advert.offer.type].ru;
   }
 
   if (advert.offer.rooms === 0 && advert.offer.guests === 0) {
@@ -327,8 +262,189 @@ var renderCard = function (advert) {
 
 // функция вставки созданной карточки на карту
 
-var createCard = function () {
-  var card = document.createDocumentFragment();
-  card.appendChild(renderCard(adverts[0]));
-  return map.insertBefore(card, mapContainer);
+var mapCard;
+
+var createCard = function (advert) {
+  var card = renderCard(advert);
+  mapCard = map.insertBefore(card, mapContainer);
+  return mapCard;
 };
+
+// функция показа и закрытия карточки
+
+var showCard = function (currentPin, advert) {
+  var checkedPins = map.querySelectorAll('.map__pin');
+  checkedPins.forEach(function (item) {
+    if (!item.classList.contains('map__pin--main')) {
+      item.classList.remove('map__pin--active');
+    }
+  });
+  currentPin.classList.add('map__pin--active');
+
+  var openedCard = map.querySelector('.map__card');
+  if (openedCard) {
+    openedCard.remove();
+  }
+  createCard(advert);
+
+  var cardCloseButton = mapCard.querySelector('.popup__close');
+
+  var onCardEscPress = function (evt) {
+    if (evt.key === ESC_KEY) {
+      evt.preventDefault();
+      closeCard(currentPin);
+    }
+  };
+
+  var closeCard = function () {
+    mapCard.remove();
+    currentPin.classList.remove('map__pin--active');
+    document.removeEventListener('keydown', onCardEscPress);
+  };
+
+  cardCloseButton.addEventListener('click', function () {
+    closeCard(currentPin);
+  });
+
+  document.addEventListener('keydown', onCardEscPress);
+};
+
+// функция создания метки + добавление обработчиков клика на этой метке (показ соответствующей карточки)
+
+var renderMapPin = function (advert) {
+  var mapPin = mapPinTemplate.cloneNode(true);
+
+  mapPin.style.left = advert.location.x - mapPinWidth / 2 + 'px';
+  mapPin.style.top = advert.location.y - mapPinHeight + 'px';
+  mapPin.querySelector('img').src = advert.author.avatar;
+  mapPin.querySelector('img').alt = advert.offer.title;
+
+  var onMapPinEnterPress = function (evt) {
+    if (evt.key === ENTER_KEY) {
+      showCard(mapPin, advert);
+    }
+  };
+
+  mapPin.addEventListener('click', function () {
+    showCard(mapPin, advert);
+  });
+  mapPin.addEventListener('keydown', onMapPinEnterPress);
+
+  return mapPin;
+};
+
+// функция отрисовки созданных меток на карте
+
+var createPin = function (arr) {
+  var pin = document.createDocumentFragment();
+  for (var i = 0; i < arr.length; i++) {
+    pin.appendChild(renderMapPin(arr[i]));
+  }
+
+  return mapPinsList.appendChild(pin);
+};
+
+// обработчик клика левой кнопкой мышки на главном пине
+
+var onPinMouseDown = function (evt) {
+  if (evt.button === MAIN_MOUSE_BUTTON) {
+    activateMap();
+  }
+};
+
+// обработчик нажатия на Enter на главном пине
+
+var onPinEnterPress = function (evt) {
+  if (evt.key === ENTER_KEY) {
+    activateMap();
+  }
+};
+
+// добавление обработчиков на главный пин
+
+mapPinMain.addEventListener('mousedown', onPinMouseDown);
+mapPinMain.addEventListener('keydown', onPinEnterPress);
+
+// функция перевода карты в активное состояние + активация полей формы + заполнение поля с адресом + отрисовка меток с объявлениями + удаление обработчиков
+
+var activateMap = function () {
+  map.classList.remove('map--faded');
+  form.classList.remove('ad-form--disabled');
+  setFieldsState();
+  setAddressValue();
+  createPin(adverts);
+  mapPinMain.removeEventListener('mousedown', onPinMouseDown);
+  mapPinMain.removeEventListener('keydown', onPinEnterPress);
+};
+
+// функция проверки соответствия минимальной цены типу жилья
+
+var checkMinPrice = function (evt) {
+  switch (evt.target.value) {
+    case 'bungalo':
+      priceInput.min = typesKeys.bungalo.min;
+      priceInput.placeholder = typesKeys.bungalo.min;
+      break;
+    case 'flat':
+      priceInput.min = typesKeys.flat.min;
+      priceInput.placeholder = typesKeys.flat.min;
+      break;
+    case 'house':
+      priceInput.min = typesKeys.house.min;
+      priceInput.placeholder = typesKeys.house.min;
+      break;
+    case 'palace':
+      priceInput.min = typesKeys.palace.min;
+      priceInput.placeholder = typesKeys.palace.min;
+      break;
+  }
+};
+
+// добавление обработчика выбора типа жилья
+
+typeSelect.addEventListener('change', checkMinPrice);
+
+// функции синхронизации полей выбора времени заезда и выезда
+
+var checkTimeIn = function () {
+  [].forEach.call(checkoutInput.options, function (item) {
+    var checkinTime = checkinInput.value;
+    item.selected = checkinTime === item.value;
+  });
+};
+
+var checkTimeOut = function () {
+  [].forEach.call(checkinInput.options, function (item) {
+    var checkoutTime = checkoutInput.value;
+    item.selected = checkoutTime === item.value;
+  });
+};
+
+// добавление обработчиков выбора времени заезда и выезда
+
+checkinInput.addEventListener('change', checkTimeIn);
+checkoutInput.addEventListener('change', checkTimeOut);
+
+// функция проверки соответствия количества гостей количеству комнат
+
+var checkGuestsNumber = function () {
+  if (guestsSelect.options.length > 0) {
+    [].forEach.call(guestsSelect.options, function (item) {
+      var roomsNumber = roomsSelect.value;
+      var guestsNumber = guestsInRooms[roomsNumber];
+      var isDisabled = !(guestsNumber.indexOf(item.value) >= 0);
+
+      item.selected = guestsNumber[0] === item.value;
+      item.disabled = isDisabled;
+      item.hidden = isDisabled;
+    });
+  }
+};
+
+// проверка соответствия количества гостей количеству комнат при активации страницы (до выбора пользователем)
+
+checkGuestsNumber();
+
+// добавление обработчика выбора количества комнат
+
+roomsSelect.addEventListener('change', checkGuestsNumber);
