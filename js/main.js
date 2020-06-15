@@ -380,24 +380,8 @@ var activateMap = function () {
 // функция проверки соответствия минимальной цены типу жилья
 
 var checkMinPrice = function (evt) {
-  switch (evt.target.value) {
-    case 'bungalo':
-      priceInput.min = typesKeys.bungalo.min;
-      priceInput.placeholder = typesKeys.bungalo.min;
-      break;
-    case 'flat':
-      priceInput.min = typesKeys.flat.min;
-      priceInput.placeholder = typesKeys.flat.min;
-      break;
-    case 'house':
-      priceInput.min = typesKeys.house.min;
-      priceInput.placeholder = typesKeys.house.min;
-      break;
-    case 'palace':
-      priceInput.min = typesKeys.palace.min;
-      priceInput.placeholder = typesKeys.palace.min;
-      break;
-  }
+  priceInput.min = typesKeys[evt.target.value].min;
+  priceInput.placeholder = typesKeys[evt.target.value].min;
 };
 
 // добавление обработчика выбора типа жилья
