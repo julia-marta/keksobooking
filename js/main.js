@@ -391,17 +391,11 @@ typeSelect.addEventListener('change', checkMinPrice);
 // функции синхронизации полей выбора времени заезда и выезда
 
 var checkTimeIn = function () {
-  [].forEach.call(checkoutInput.options, function (item) {
-    var checkinTime = checkinInput.value;
-    item.selected = checkinTime === item.value;
-  });
+  checkoutInput.value = checkinInput.value;
 };
 
 var checkTimeOut = function () {
-  [].forEach.call(checkinInput.options, function (item) {
-    var checkoutTime = checkoutInput.value;
-    item.selected = checkoutTime === item.value;
-  });
+  checkinInput.value = checkoutInput.value;
 };
 
 // добавление обработчиков выбора времени заезда и выезда
