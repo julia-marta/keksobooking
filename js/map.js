@@ -3,9 +3,9 @@
 (function () {
 
   var mapBorders = {
-    top: window.data.MIN_COORDINATEY,
+    top: window.data.minCoordinateY,
     right: window.data.maxCoordinateX,
-    bottom: window.data.MAX_COORDINATEY,
+    bottom: window.data.maxCoordinateY,
     left: window.data.minCoordinateX
   };
 
