@@ -6,8 +6,8 @@
   var MAX_PRICE = 10000;
   var MAX_ROOMS = 5;
   var MAX_GUESTS = 10;
-  var MIN_COORDINATEY = 130;
-  var MAX_COORDINATEY = 630;
+  var MIN_MAP_Y = 130;
+  var MAX_MAP_Y = 630;
 
   var TITLES = ['Уютное гнездышко для молодоженов', 'Маленькая квартирка рядом с парком', 'Небольшая лавочка в парке', 'Императорский дворец в центре Токио', 'Милейший чердачок', 'Наркоманский притон', 'Чёткая хата', 'Стандартная квартира в центре'];
   var TYPES = ['palace', 'flat', 'house', 'bungalo'];
@@ -38,8 +38,10 @@
   var mapPinElement = document.querySelector('.map__pin');
   var mapPinWidth = mapPinElement.offsetWidth;
   var mapPinHeight = mapPinElement.offsetHeight;
-  var minCoordinateX = 1 + mapPinWidth;
-  var maxCoordinateX = window.main.map.offsetWidth - mapPinWidth;
+  var minCoordinateX = 0 - mapPinWidth / 2;
+  var maxCoordinateX = window.main.map.offsetWidth - mapPinWidth / 2;
+  var minCoordinateY = MIN_MAP_Y - mapPinHeight;
+  var maxCoordinateY = MAX_MAP_Y - mapPinHeight;
 
   // функция создания массива с объявлениями-объектами
 
@@ -53,7 +55,7 @@
         },
         offer: {
           title: TITLES[i],
-          address: window.main.getRandomInt(minCoordinateX, maxCoordinateX) + ', ' + window.main.getRandomInt(MIN_COORDINATEY, MAX_COORDINATEY),
+          address: window.main.getRandomInt(minCoordinateX, maxCoordinateX) + ', ' + window.main.getRandomInt(minCoordinateY, maxCoordinateY),
           price: window.main.getRandomInt(1, MAX_PRICE),
           type: TYPES[window.main.getRandomInt(0, TYPES.length - 1)],
           rooms: window.main.getRandomInt(1, MAX_ROOMS),
@@ -66,7 +68,7 @@
         },
         location: {
           x: window.main.getRandomInt(minCoordinateX, maxCoordinateX),
-          y: window.main.getRandomInt(MIN_COORDINATEY, MAX_COORDINATEY)
+          y: window.main.getRandomInt(minCoordinateY, maxCoordinateY)
         }
       });
     }
@@ -80,6 +82,10 @@
     adverts: adverts,
     typesKeys: typesKeys,
     mapPinWidth: mapPinWidth,
-    mapPinHeight: mapPinHeight
+    mapPinHeight: mapPinHeight,
+    maxCoordinateY: maxCoordinateY,
+    minCoordinateY: minCoordinateY,
+    maxCoordinateX: maxCoordinateX,
+    minCoordinateX: minCoordinateX
   };
 })();
