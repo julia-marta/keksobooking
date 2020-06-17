@@ -2,15 +2,18 @@
 
 (function () {
 
-  var mapPinsList = window.main.map.querySelector('.map__pins');
+  var mapBorders = {
+    top: window.data.MIN_COORDINATEY,
+    right: window.data.maxCoordinateX,
+    bottom: window.data.MAX_COORDINATEY,
+    left: window.data.minCoordinateX
+  };
+
   var mapPinMain = window.main.map.querySelector('.map__pin--main');
   var mapPinMainWidth = mapPinMain.offsetWidth;
   var mapPinMainHeight = mapPinMain.offsetHeight;
-  var mapPinMainX = parseInt(mapPinMain.style.left, 10);
-  var mapPinMainY = parseInt(mapPinMain.style.top, 10);
-  var mapPinTemplate = document.querySelector('#pin')
-    .content
-    .querySelector('.map__pin');
+  var mapPinMainDefaultX = mapPinMain.offsetLeft + mapPinMainWidth / 2;
+  var mapPinMainDefaultY = mapPinMain.offsetTop + mapPinMainHeight / 2;
   var fieldsets = window.main.form.querySelectorAll('fieldset');
   var addressField = window.main.form.querySelector('#address');
 
@@ -24,9 +27,9 @@
 
   // функция заполнения поля адреса
 
-  var setAddressValue = function () {
-    var addressX = Math.floor(mapPinMainX + mapPinMainWidth / 2);
-    var addressY = window.main.form.classList.contains('ad-form--disabled') ? Math.floor(mapPinMainY + mapPinMainHeight / 2) : Math.floor(mapPinMainY + mapPinMainHeight);
+  var setAddressValue = function (x, y) {
+    var addressX = Math.floor(x);
+    var addressY = Math.floor(y);
 
     addressField.value = addressX + ', ' + addressY;
   };
@@ -34,7 +37,7 @@
   // неактивное состояние карты: отключение полей формы и заполнение поля адреса
 
   setFieldsState();
-  setAddressValue();
+  setAddressValue(mapPinMainDefaultX, mapPinMainDefaultY);
 
   // обработчик клика левой кнопкой мышки на главном пине
 
@@ -48,76 +51,63 @@
     window.main.isEnterEvent(evt, activateMap);
   };
 
+  // обработчик перемещения главного пина
+
+  var onPinMouseMove = function (evt) {
+    evt.preventDefault();
+
+    var startCoords = {
+      x: evt.clientX,
+      y: evt.clientY
+    };
+
+    var onMouseMove = function (moveEvt) {
+      moveEvt.preventDefault();
+
+      var shift = {
+        x: startCoords.x - moveEvt.clientX,
+        y: startCoords.y - moveEvt.clientY
+      };
+
+      startCoords = {
+        x: moveEvt.clientX,
+        y: moveEvt.clientY
+      };
+
+      var mapPinMainCoords = {
+        x: mapPinMain.offsetLeft - shift.x,
+        y: mapPinMain.offsetTop - shift.y
+      };
+
+      if (mapPinMainCoords.x >= mapBorders.left && mapPinMainCoords.x <= mapBorders.right && mapPinMainCoords.y >= mapBorders.top && mapPinMainCoords.y <= mapBorders.bottom) {
+        mapPinMain.style.left = mapPinMainCoords.x + 'px';
+        mapPinMain.style.top = mapPinMainCoords.y + 'px';
+      }
+
+      var addressCoords = {
+        x: mapPinMainCoords.x + (mapPinMainWidth / 2),
+        y: mapPinMainCoords.y + mapPinMainHeight
+      };
+
+      setAddressValue(addressCoords.x, addressCoords.y);
+    };
+
+    var onMouseUp = function (upEvt) {
+      upEvt.preventDefault();
+
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
+
   // добавление обработчиков на главный пин
 
   mapPinMain.addEventListener('mousedown', onPinMouseDown);
   mapPinMain.addEventListener('keydown', onPinEnterPress);
-
-  // функция показа и закрытия карточки
-
-  var showCard = function (currentPin, advert) {
-    var checkedPins = window.main.map.querySelectorAll('.map__pin');
-    checkedPins.forEach(function (item) {
-      if (!item.classList.contains('map__pin--main')) {
-        item.classList.remove('map__pin--active');
-      }
-    });
-    currentPin.classList.add('map__pin--active');
-
-    var openedCard = window.main.map.querySelector('.map__card');
-    if (openedCard) {
-      openedCard.remove();
-    }
-    var mapCard = window.card.createCard(advert);
-    var cardCloseButton = mapCard.querySelector('.popup__close');
-
-    var onCardEscPress = function (evt) {
-      window.main.isEscEvent(evt, closeCard);
-    };
-
-    var closeCard = function () {
-      mapCard.remove();
-      currentPin.classList.remove('map__pin--active');
-      document.removeEventListener('keydown', onCardEscPress);
-    };
-
-    cardCloseButton.addEventListener('click', function () {
-      closeCard();
-    });
-    document.addEventListener('keydown', onCardEscPress);
-  };
-
-  // функция создания метки + добавление обработчиков клика на этой метке (показ соответствующей карточки)
-
-  var renderMapPin = function (advert) {
-    var mapPin = mapPinTemplate.cloneNode(true);
-
-    mapPin.style.left = advert.location.x - window.data.mapPinWidth / 2 + 'px';
-    mapPin.style.top = advert.location.y - window.data.mapPinHeight + 'px';
-    mapPin.querySelector('img').src = advert.author.avatar;
-    mapPin.querySelector('img').alt = advert.offer.title;
-
-    var onMapPinEnterPress = function (evt) {
-      window.main.isEnterEvent(evt, showCard, mapPin, advert);
-    };
-
-    mapPin.addEventListener('click', function () {
-      showCard(mapPin, advert);
-    });
-    mapPin.addEventListener('keydown', onMapPinEnterPress);
-
-    return mapPin;
-  };
-
-  // функция отрисовки созданных меток на карте
-
-  var createPin = function (arr) {
-    var pin = document.createDocumentFragment();
-    for (var i = 0; i < arr.length; i++) {
-      pin.appendChild(renderMapPin(arr[i]));
-    }
-    return mapPinsList.appendChild(pin);
-  };
+  mapPinMain.addEventListener('mousedown', onPinMouseMove);
 
   // функция перевода карты в активное состояние + активация полей формы + заполнение поля с адресом + отрисовка меток с объявлениями + удаление обработчиков
 
@@ -125,8 +115,8 @@
     window.main.map.classList.remove('map--faded');
     window.main.form.classList.remove('ad-form--disabled');
     setFieldsState();
-    setAddressValue();
-    createPin(window.data.adverts);
+    setAddressValue(mapPinMainDefaultX, mapPinMainDefaultY + mapPinMainHeight / 2);
+    window.pin.createPin(window.data.adverts);
     mapPinMain.removeEventListener('mousedown', onPinMouseDown);
     mapPinMain.removeEventListener('keydown', onPinEnterPress);
   };

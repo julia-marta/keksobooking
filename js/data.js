@@ -38,8 +38,8 @@
   var mapPinElement = document.querySelector('.map__pin');
   var mapPinWidth = mapPinElement.offsetWidth;
   var mapPinHeight = mapPinElement.offsetHeight;
-  var minCoordinateX = 1 + mapPinWidth;
-  var maxCoordinateX = window.main.map.offsetWidth - mapPinWidth;
+  var minCoordinateX = 0 - mapPinWidth / 2;
+  var maxCoordinateX = window.main.map.offsetWidth - mapPinWidth / 2;
 
   // функция создания массива с объявлениями-объектами
 
@@ -80,6 +80,10 @@
     adverts: adverts,
     typesKeys: typesKeys,
     mapPinWidth: mapPinWidth,
-    mapPinHeight: mapPinHeight
+    mapPinHeight: mapPinHeight,
+    MAX_COORDINATEY: MAX_COORDINATEY,
+    MIN_COORDINATEY: MIN_COORDINATEY,
+    maxCoordinateX: maxCoordinateX,
+    minCoordinateX: minCoordinateX
   };
 })();
