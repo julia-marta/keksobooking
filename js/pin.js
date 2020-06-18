@@ -62,13 +62,17 @@
     return mapPin;
   };
 
-  window.pin = {
-    createPin: function (arr) {
-      var pin = document.createDocumentFragment();
-      for (var i = 0; i < arr.length; i++) {
-        pin.appendChild(renderMapPin(arr[i]));
-      }
-      return mapPinsList.appendChild(pin);
+  // функция отрисовки меток на карте
+
+  var createPin = function (arr) {
+    var pin = document.createDocumentFragment();
+    for (var i = 0; i < arr.length; i++) {
+      pin.appendChild(renderMapPin(arr[i]));
     }
+    return mapPinsList.appendChild(pin);
+  };
+
+  window.pin = {
+    onSuccessLoad: createPin
   };
 })();
