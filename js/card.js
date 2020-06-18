@@ -33,6 +33,25 @@
     return photos;
   };
 
+  // функция подстановки верных склонений существительных после числительных
+
+  var numDecline = function (number, singularform, genitiveform, pluralform) {
+    var modulo = number % 10;
+    var form;
+
+    if (number >= 11 && number <= 14) {
+      form = pluralform;
+    } else if (modulo === 1) {
+      form = singularform;
+    } else if (modulo === 2 || modulo === 3 || modulo === 4) {
+      form = genitiveform;
+    } else {
+      form = pluralform;
+    }
+
+    return number + ' ' + form;
+  };
+
   // функция создания карточки объявления на основе объекта из массива + скрытие блоков с отсутствующими данными
 
   var renderCard = function (advert) {
@@ -75,7 +94,7 @@
     if (advert.offer.rooms === 0 && advert.offer.guests === 0) {
       advertCardCapacity.classList.add('hidden');
     } else {
-      advertCardCapacity.textContent = ((advert.offer.rooms !== 0) ? advert.offer.rooms + ' комнаты' : '') + ((advert.offer.guests !== 0) ? ' для ' + advert.offer.guests + ' гостей' : '');
+      advertCardCapacity.textContent = ((advert.offer.rooms !== 0) ? numDecline(advert.offer.rooms, 'комната', 'комнаты', 'комнат') : '') + ((advert.offer.guests !== 0) ? ' для ' + numDecline(advert.offer.guests, 'гостя', 'гостей', 'гостей') : '');
     }
 
     if (advert.offer.checkin.length === 0 && advert.offer.checkout.length === 0) {

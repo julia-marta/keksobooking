@@ -109,14 +109,14 @@
   mapPinMain.addEventListener('keydown', onPinEnterPress);
   mapPinMain.addEventListener('mousedown', onPinMouseMove);
 
-  // функция перевода карты в активное состояние + активация полей формы + заполнение поля с адресом + отрисовка меток с объявлениями + удаление обработчиков
+  // функция перевода карты в активное состояние + активация полей формы + заполнение поля с адресом + получение данных с сервера и отрисовка меток с объявлениями + удаление обработчиков
 
   var activateMap = function () {
     window.main.map.classList.remove('map--faded');
     window.main.form.classList.remove('ad-form--disabled');
     setFieldsState();
     setAddressValue(mapPinMainDefaultX, mapPinMainDefaultY + mapPinMainHeight / 2);
-    window.pin.createPin(window.data.adverts);
+    window.upload(window.pin.onSuccessLoad);
     mapPinMain.removeEventListener('mousedown', onPinMouseDown);
     mapPinMain.removeEventListener('keydown', onPinEnterPress);
   };
