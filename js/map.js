@@ -12,8 +12,10 @@
   var mapPinMain = window.main.map.querySelector('.map__pin--main');
   var mapPinMainWidth = mapPinMain.offsetWidth;
   var mapPinMainHeight = mapPinMain.offsetHeight;
-  var mapPinMainDefaultX = mapPinMain.offsetLeft + mapPinMainWidth / 2;
-  var mapPinMainDefaultY = mapPinMain.offsetTop + mapPinMainHeight / 2;
+  var mapPinMainDefaultX = mapPinMain.offsetLeft;
+  var mapPinMainDefaultY = mapPinMain.offsetTop;
+  var mapPinMainCenterDefaultX = mapPinMainDefaultX + mapPinMainWidth / 2;
+  var mapPinMainCenterDefaultY = mapPinMainDefaultY + mapPinMainHeight / 2;
   var fieldsets = window.main.form.querySelectorAll('fieldset');
   var addressField = window.main.form.querySelector('#address');
 
@@ -33,11 +35,6 @@
 
     addressField.value = addressX + ', ' + addressY;
   };
-
-  // неактивное состояние карты: отключение полей формы и заполнение поля адреса
-
-  setFieldsState();
-  setAddressValue(mapPinMainDefaultX, mapPinMainDefaultY);
 
   // обработчик клика левой кнопкой мышки на главном пине
 
@@ -103,21 +100,54 @@
     document.addEventListener('mouseup', onMouseUp);
   };
 
-  // добавление обработчиков на главный пин
+  // изначальное неактивное состояние карты: отключение полей формы, заполнение поля адреса, добавление обработчиков на главный пин
 
-  mapPinMain.addEventListener('mousedown', onPinMouseDown);
-  mapPinMain.addEventListener('keydown', onPinEnterPress);
-  mapPinMain.addEventListener('mousedown', onPinMouseMove);
+  var setNonActiveMap = function () {
+    setFieldsState();
+    setAddressValue(mapPinMainCenterDefaultX, mapPinMainCenterDefaultY);
+    mapPinMain.addEventListener('mousedown', onPinMouseDown);
+    mapPinMain.addEventListener('keydown', onPinEnterPress);
+    mapPinMain.addEventListener('mousedown', onPinMouseMove);
+  };
 
-  // функция перевода карты в активное состояние + активация полей формы + заполнение поля с адресом + получение данных с сервера и отрисовка меток с объявлениями + удаление обработчиков
+  setNonActiveMap();
+
+  // функция перевода карты в активное состояние: активация полей формы, заполнение поля с адресом, получение данных с сервера и отрисовка меток с объявлениями, удаление обработчиков
 
   var activateMap = function () {
     window.main.map.classList.remove('map--faded');
     window.main.form.classList.remove('ad-form--disabled');
     setFieldsState();
-    setAddressValue(mapPinMainDefaultX, mapPinMainDefaultY + mapPinMainHeight / 2);
-    window.upload(window.pin.onSuccessLoad);
+    setAddressValue(mapPinMainCenterDefaultX, mapPinMainCenterDefaultY + mapPinMainHeight / 2);
+    window.upload.get(window.pin.onSuccessLoad);
     mapPinMain.removeEventListener('mousedown', onPinMouseDown);
     mapPinMain.removeEventListener('keydown', onPinEnterPress);
+  };
+
+  // функция перевода карты в неактивное состояние: удаление меток и карточек, сброс и блокировка формы, возврат пина в исходные координаты, изначальные настройки неактивной карты
+
+  var deactivateMap = function () {
+    var pins = window.main.map.querySelectorAll('.map__pin');
+    pins.forEach(function (item) {
+      if (!item.classList.contains('map__pin--main')) {
+        window.pin.mapPinsList.removeChild(item);
+      }
+    });
+
+    var openedCard = window.main.map.querySelector('.map__card');
+    if (openedCard) {
+      openedCard.remove();
+    }
+
+    window.main.map.classList.add('map--faded');
+    window.main.form.classList.add('ad-form--disabled');
+    window.form.resetForm();
+    mapPinMain.style.top = mapPinMainDefaultY + 'px';
+    mapPinMain.style.left = mapPinMainDefaultX + 'px';
+    setNonActiveMap();
+  };
+
+  window.map = {
+    deactivateMap: deactivateMap
   };
 })();

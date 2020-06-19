@@ -7,11 +7,13 @@
   var ESC_KEY = 'Escape';
   var map = document.querySelector('.map');
   var form = document.querySelector('.ad-form');
+  var mainPage = document.querySelector('main');
 
 
   window.main = {
     map: map,
     form: form,
+    mainPage: mainPage,
     isMainMouseEvent: function (evt, action) {
       if (evt.button === MAIN_MOUSE_BUTTON) {
         action();
