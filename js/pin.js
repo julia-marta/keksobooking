@@ -73,6 +73,7 @@
   };
 
   window.pin = {
-    onSuccessLoad: createPin
+    onSuccessLoad: createPin,
+    mapPinsList: mapPinsList
   };
 })();

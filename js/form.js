@@ -8,6 +8,14 @@
   var priceInput = window.main.form.querySelector('#price');
   var checkinInput = window.main.form.querySelector('#timein');
   var checkoutInput = window.main.form.querySelector('#timeout');
+  var resetButton = window.main.form.querySelector('.ad-form__reset');
+
+  var successMessageTemplate = document.querySelector('#success')
+    .content
+    .querySelector('.success');
+  var errorMessageTemplate = document.querySelector('#error')
+  .content
+  .querySelector('.error');
 
   var guestsInRooms = {
     1: ['1'],
@@ -26,6 +34,7 @@
   // добавление обработчика выбора типа жилья
 
   typeSelect.addEventListener('change', checkMinPrice);
+
 
   // функции синхронизации полей выбора времени заезда и выезда
 
@@ -65,4 +74,74 @@
   // добавление обработчика выбора количества комнат
 
   roomsSelect.addEventListener('change', checkGuestsNumber);
+
+  // функция добавления сообщения о статусе отправки формы
+
+  var addMessage = function (template) {
+    var message = template.cloneNode(true);
+    window.main.mainPage.appendChild(message);
+
+    var removeMessage = function () {
+      window.main.mainPage.removeChild(message);
+
+      document.removeEventListener('keydown', onMessageEscPress);
+      document.removeEventListener('click', removeMessage);
+    };
+
+    var onMessageEscPress = function (evt) {
+      window.main.isEscEvent(evt, removeMessage);
+    };
+
+    document.addEventListener('keydown', onMessageEscPress);
+    document.addEventListener('click', removeMessage);
+
+    var messageCloseButton = message.querySelector('.error__button');
+
+    if (messageCloseButton) {
+      messageCloseButton.addEventListener('click', removeMessage);
+    }
+  };
+
+  // успешная отправка данных формы: добавление сообщения и деактивация карты
+
+  var onSuccessSubmit = function () {
+    addMessage(successMessageTemplate);
+    window.map.deactivateMap();
+  };
+
+  // ошибка при отправке данных формы: добавление сообщения
+
+  var onErrorSubmit = function () {
+    addMessage(errorMessageTemplate);
+  };
+
+  // функция отправки данных формы на сервер
+
+  var onSubmitForm = function (evt) {
+    window.upload.send(new FormData(window.main.form), onSuccessSubmit, onErrorSubmit);
+    evt.preventDefault();
+  };
+
+  // добавление обработчика на отправку формы
+
+  window.main.form.addEventListener('submit', onSubmitForm);
+
+  // функция сброса данных формы
+
+  var resetForm = function () {
+    window.main.form.reset();
+    priceInput.min = window.data.typesKeys[typeSelect.value].min;
+    priceInput.placeholder = window.data.typesKeys[typeSelect.value].min;
+  };
+
+  // добавление обработчика на кнопку очистки формы
+
+  resetButton.addEventListener('click', function (evt) {
+    evt.preventDefault();
+    window.map.deactivateMap();
+  });
+
+  window.form = {
+    resetForm: resetForm
+  };
 })();
