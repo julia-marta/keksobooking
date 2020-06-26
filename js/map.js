@@ -18,6 +18,15 @@
   var mapPinMainCenterDefaultY = mapPinMainDefaultY + mapPinMainHeight / 2;
   var fieldsets = window.main.form.querySelectorAll('fieldset');
   var addressField = window.main.form.querySelector('#address');
+  var ads = [];
+
+  // функция отключения/активации полей фильтра
+
+  var setFilterState = function () {
+    [].forEach.call(window.main.filter.elements, function (item) {
+      item.disabled = !item.disabled;
+    });
+  };
 
   // функция отключения/активации полей формы
 
@@ -100,9 +109,10 @@
     document.addEventListener('mouseup', onMouseUp);
   };
 
-  // изначальное неактивное состояние карты: отключение полей формы, заполнение поля адреса, добавление обработчиков на главный пин
+  // изначальное неактивное состояние карты: отключение полей фильтра и формы, заполнение поля адреса, добавление обработчиков на главный пин
 
   var setNonActiveMap = function () {
+    setFilterState();
     setFieldsState();
     setAddressValue(mapPinMainCenterDefaultX, mapPinMainCenterDefaultY);
     mapPinMain.addEventListener('mousedown', onPinMouseDown);
@@ -110,23 +120,41 @@
     mapPinMain.addEventListener('mousedown', onPinMouseMove);
   };
 
+  // установка изначального неактивного состояния карты
+
   setNonActiveMap();
 
-  // функция перевода карты в активное состояние: активация полей формы, заполнение поля с адресом, получение данных с сервера и отрисовка меток с объявлениями, удаление обработчиков
+  // функция фильтрации полученных данных
+
+  var filterAds = function () {
+    var filteredAds = window.filter.filterByType(ads);
+    window.pin.createPins(filteredAds);
+  };
+
+  // успешное получение данных: сохранение в массив, отрисовка отфильтрованных меток, активация полей фильтра
+
+  var onSuccessLoad = function (data) {
+    ads = data;
+    filterAds();
+    setFilterState();
+  };
+
+  // функция перевода карты в активное состояние: активация полей формы, заполнение поля с адресом, получение данных с сервера, удаление обработчиков
 
   var activateMap = function () {
     window.main.map.classList.remove('map--faded');
     window.main.form.classList.remove('ad-form--disabled');
     setFieldsState();
     setAddressValue(mapPinMainCenterDefaultX, mapPinMainCenterDefaultY + mapPinMainHeight / 2);
-    window.upload.get(window.pin.onSuccessLoad);
+    window.upload.get(onSuccessLoad);
+
     mapPinMain.removeEventListener('mousedown', onPinMouseDown);
     mapPinMain.removeEventListener('keydown', onPinEnterPress);
   };
 
-  // функция перевода карты в неактивное состояние: удаление меток и карточек, сброс и блокировка формы, возврат пина в исходные координаты, изначальные настройки неактивной карты
+  // функция очистки карты: удаление всех меток и закрытие открытой карточки объявления
 
-  var deactivateMap = function () {
+  var clearMap = function () {
     var pins = window.main.map.querySelectorAll('.map__pin');
     pins.forEach(function (item) {
       if (!item.classList.contains('map__pin--main')) {
@@ -138,16 +166,24 @@
     if (openedCard) {
       openedCard.remove();
     }
+  };
 
+  // функция перевода карты в неактивное состояние: очистка карты, сброс и блокировка формы, сброс фильтра, возврат пина в исходные координаты, изначальные настройки неактивной карты
+
+  var deactivateMap = function () {
+    clearMap();
+    setNonActiveMap();
     window.main.map.classList.add('map--faded');
     window.main.form.classList.add('ad-form--disabled');
     window.form.resetForm();
+    window.main.filter.reset();
     mapPinMain.style.top = mapPinMainDefaultY + 'px';
     mapPinMain.style.left = mapPinMainDefaultX + 'px';
-    setNonActiveMap();
   };
 
   window.map = {
-    deactivateMap: deactivateMap
+    clearMap: clearMap,
+    deactivateMap: deactivateMap,
+    filterAds: filterAds
   };
 })();
