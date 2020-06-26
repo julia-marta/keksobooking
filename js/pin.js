@@ -1,6 +1,8 @@
 'use strict';
 
 (function () {
+  var PINS_COUNT = 5;
+
   var mapPinTemplate = document.querySelector('#pin')
     .content
     .querySelector('.map__pin');
@@ -62,18 +64,17 @@
     return mapPin;
   };
 
-  // функция отрисовки меток на карте
+  // функция отрисовки 5 меток на карте
 
-  var createPin = function (arr) {
-    var pin = document.createDocumentFragment();
-    for (var i = 0; i < arr.length; i++) {
-      pin.appendChild(renderMapPin(arr[i]));
+  var createPins = function (arr) {
+    var takeNumber = arr.length > PINS_COUNT ? PINS_COUNT : arr.length;
+    for (var i = 0; i < takeNumber; i++) {
+      mapPinsList.appendChild(renderMapPin(arr[i]));
     }
-    return mapPinsList.appendChild(pin);
   };
 
   window.pin = {
-    onSuccessLoad: createPin,
+    createPins: createPins,
     mapPinsList: mapPinsList
   };
 })();
