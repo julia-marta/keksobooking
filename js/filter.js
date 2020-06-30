@@ -1,19 +1,20 @@
 'use strict';
 
 (function () {
-  var typeSelect = window.main.filter.querySelector('#housing-type');
-  var priceSelect = window.main.filter.querySelector('#housing-price');
-  var roomsSelect = window.main.filter.querySelector('#housing-rooms');
-  var guestsSelect = window.main.filter.querySelector('#housing-guests');
   var featuresSelect = window.main.filter.querySelector('#housing-features');
+
+  var Price = {
+    MIN: 10000,
+    MAX: 50000
+  };
 
   // функция определения уровня цены
 
   var getPriceLevel = function (price) {
     var priceLevel;
-    if (price < 10000) {
+    if (price < Price.MIN) {
       priceLevel = 'low';
-    } else if (price >= 10000 && price <= 50000) {
+    } else if (price >= Price.MIN && price <= Price.MAX) {
       priceLevel = 'middle';
     } else {
       priceLevel = 'high';
@@ -21,52 +22,45 @@
     return priceLevel;
   };
 
-  // функция фильтрации по типу жилья
+  // функция фильтрации по типу жилья / цене / числу комнат / числу гостей
 
-  var filterByType = function (arr) {
-    var filteredByType = window.main.shuffleArray(arr);
-    if (typeSelect.value !== 'any') {
-      filteredByType = arr.slice().filter(function (it) {
-        return it.offer.type === typeSelect.value;
+  var filterBySelectors = function (arr) {
+    var filteredBySelectors = window.main.shuffleArray(arr);
+    var selectors = window.main.filter.querySelectorAll('select');
+    var selectedSelectors = Array.from(selectors).filter(function (it) {
+      return it.value !== 'any';
+    });
+
+    if (selectedSelectors.length !== 0) {
+
+      var filterBySelectedSelectors = function (filteredArr, filter) {
+        switch (filter.name) {
+          case 'housing-type':
+            return filteredArr.slice().filter(function (it) {
+              return it.offer.type === filter.value;
+            });
+          case 'housing-price':
+            return filteredArr.slice().filter(function (it) {
+              return getPriceLevel(it.offer.price) === filter.value;
+            });
+          case 'housing-rooms':
+            return filteredArr.slice().filter(function (it) {
+              return it.offer.rooms === Number(filter.value);
+            });
+          case 'housing-guests':
+            return filteredArr.slice().filter(function (it) {
+              return it.offer.guests === Number(filter.value);
+            });
+        }
+        return filteredArr;
+      };
+
+      selectedSelectors.forEach(function (item) {
+        filteredBySelectors = filterBySelectedSelectors(filteredBySelectors, item);
       });
     }
-    return filteredByType;
-  };
 
-  // функция фильтрации по цене
-
-  var filterByPrice = function (arr) {
-    var filteredByPrice = window.main.shuffleArray(arr);
-    if (priceSelect.value !== 'any') {
-      filteredByPrice = arr.slice().filter(function (it) {
-        return getPriceLevel(it.offer.price) === priceSelect.value;
-      });
-    }
-    return filteredByPrice;
-  };
-
-  // функция фильтрации по числу комнат
-
-  var filterByRooms = function (arr) {
-    var filteredByRooms = window.main.shuffleArray(arr);
-    if (roomsSelect.value !== 'any') {
-      filteredByRooms = arr.slice().filter(function (it) {
-        return it.offer.rooms === Number(roomsSelect.value);
-      });
-    }
-    return filteredByRooms;
-  };
-
-  // функция фильтрации по числу гостей
-
-  var filterByGuests = function (arr) {
-    var filteredByGuests = window.main.shuffleArray(arr);
-    if (guestsSelect.value !== 'any') {
-      filteredByGuests = arr.slice().filter(function (it) {
-        return it.offer.guests === Number(guestsSelect.value);
-      });
-    }
-    return filteredByGuests;
+    return filteredBySelectors;
   };
 
   // функция фильтрации по наличию удобств
@@ -76,6 +70,7 @@
     var selectedFeatures = featuresSelect.querySelectorAll('input:checked');
 
     if (selectedFeatures.length !== 0) {
+
       var filterBySelectedFeatures = function (filteredArr, selectedFeature) {
         return filteredArr.slice().filter(function (it) {
           return it.offer.features.indexOf(selectedFeature) >= 0;
@@ -93,11 +88,7 @@
   // функция фильтрации данных всеми фильтрами
 
   var filterData = function (arr) {
-    var filteredByType = filterByType(arr);
-    var filteredByPrice = filterByPrice(filteredByType);
-    var filteredByRooms = filterByRooms(filteredByPrice);
-    var filteredByGuests = filterByGuests(filteredByRooms);
-    var filteredArr = filterByFeatures(filteredByGuests);
+    var filteredArr = filterByFeatures(filterBySelectors(arr));
 
     return filteredArr;
   };
@@ -111,11 +102,7 @@
 
   // добавление обработчиков на все фильтры
 
-  typeSelect.addEventListener('change', onFilterChange);
-  priceSelect.addEventListener('change', onFilterChange);
-  roomsSelect.addEventListener('change', onFilterChange);
-  guestsSelect.addEventListener('change', onFilterChange);
-  featuresSelect.addEventListener('change', onFilterChange);
+  window.main.filter.addEventListener('change', onFilterChange);
 
   window.filter = {
     filterData: filterData
