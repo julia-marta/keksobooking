@@ -2,32 +2,28 @@
 
 (function () {
 
-  var MAIN_MOUSE_BUTTON = 0;
-  var ENTER_KEY = 'Enter';
-  var ESC_KEY = 'Escape';
+  var Key = {
+    ENTER: 'Enter',
+    ESC: 'Escape'
+  };
+
+  var mainPage = document.querySelector('main');
   var map = document.querySelector('.map');
   var form = document.querySelector('.ad-form');
   var filter = map.querySelector('.map__filters');
-  var mainPage = document.querySelector('main');
-
 
   window.main = {
+    mainPage: mainPage,
     map: map,
     form: form,
     filter: filter,
-    mainPage: mainPage,
-    isMainMouseEvent: function (evt, action) {
-      if (evt.button === MAIN_MOUSE_BUTTON) {
-        action();
-      }
-    },
     isEnterEvent: function (evt, action, a, b) {
-      if (evt.key === ENTER_KEY) {
+      if (evt.key === Key.ENTER) {
         action(a, b);
       }
     },
     isEscEvent: function (evt, action) {
-      if (evt.key === ESC_KEY) {
+      if (evt.key === Key.ESC) {
         action();
       }
     },
