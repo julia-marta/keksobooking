@@ -1,99 +1,61 @@
 'use strict';
 
 (function () {
-  var featuresSelect = window.main.filter.querySelector('#housing-features');
+  var filters = Array.from(window.main.filter.children);
 
-  var Price = {
-    MIN: 10000,
-    MAX: 50000
-  };
-
-  // функция определения уровня цены
-
-  var getPriceLevel = function (price) {
-    var priceLevel;
-    if (price < Price.MIN) {
-      priceLevel = 'low';
-    } else if (price >= Price.MIN && price <= Price.MAX) {
-      priceLevel = 'middle';
-    } else {
-      priceLevel = 'high';
+  var priceMap = {
+    'low': {
+      min: 0,
+      max: 9999
+    },
+    'middle': {
+      min: 10000,
+      max: 49999
+    },
+    'high': {
+      min: 50000,
+      max: Infinity
     }
-    return priceLevel;
   };
 
-  // функция фильтрации по типу жилья / цене / числу комнат / числу гостей
+  // объект с функциями для каждого типа фильтра (проверка совпадения соответствующего свойства в объявлении со значением выбранного фильтра)
 
-  var filterBySelectors = function (arr) {
-    var filteredBySelectors = window.main.shuffleArray(arr);
-    var selectors = window.main.filter.querySelectorAll('select');
-    var selectedSelectors = Array.from(selectors).filter(function (it) {
-      return it.value !== 'any';
-    });
-
-    if (selectedSelectors.length !== 0) {
-
-      var filterBySelectedSelectors = function (filteredArr, filter) {
-        switch (filter.name) {
-          case 'housing-type':
-            return filteredArr.slice().filter(function (it) {
-              return it.offer.type === filter.value;
-            });
-          case 'housing-price':
-            return filteredArr.slice().filter(function (it) {
-              return getPriceLevel(it.offer.price) === filter.value;
-            });
-          case 'housing-rooms':
-            return filteredArr.slice().filter(function (it) {
-              return it.offer.rooms === Number(filter.value);
-            });
-          case 'housing-guests':
-            return filteredArr.slice().filter(function (it) {
-              return it.offer.guests === Number(filter.value);
-            });
-        }
-        return filteredArr;
-      };
-
-      selectedSelectors.forEach(function (item) {
-        filteredBySelectors = filterBySelectedSelectors(filteredBySelectors, item);
-      });
-    }
-
-    return filteredBySelectors;
-  };
-
-  // функция фильтрации по наличию удобств
-
-  var filterByFeatures = function (arr) {
-    var filteredByFeatures = window.main.shuffleArray(arr);
-    var selectedFeatures = featuresSelect.querySelectorAll('input:checked');
-
-    if (selectedFeatures.length !== 0) {
-
-      var filterBySelectedFeatures = function (filteredArr, selectedFeature) {
-        return filteredArr.slice().filter(function (it) {
-          return it.offer.features.indexOf(selectedFeature) >= 0;
+  var filterRules = {
+    'housing-type': function (ad, filter) {
+      return ad.offer.type === filter.value;
+    },
+    'housing-price': function (ad, filter) {
+      return ad.offer.price >= priceMap[filter.value].min && ad.offer.price <= priceMap[filter.value].max;
+    },
+    'housing-rooms': function (ad, filter) {
+      return ad.offer.rooms === Number(filter.value);
+    },
+    'housing-guests': function (ad, filter) {
+      return ad.offer.guests === Number(filter.value);
+    },
+    'housing-features': function (ad, filter) {
+      var selectedFeatures = Array.from(filter.querySelectorAll('input:checked'));
+      return selectedFeatures.every(function (item) {
+        return ad.offer.features.some(function (feature) {
+          return feature === item.value;
         });
-      };
-
-      [].forEach.call(selectedFeatures, function (item) {
-        filteredByFeatures = filterBySelectedFeatures(filteredByFeatures, item.value);
       });
     }
-
-    return filteredByFeatures;
   };
 
-  // функция фильтрации данных всеми фильтрами
+  // функция фильтрации полученного массива: перебор всех фильтров и сравнение каждого элемента массива со значением этого фильтра с помощью функций из объекта с правилами
 
   var filterData = function (arr) {
-    var filteredArr = filterByFeatures(filterBySelectors(arr));
+    var filteredArr = arr.filter(function (item) {
+      return filters.every(function (filter) {
+        return (filter.value === 'any') ? true : filterRules[filter.id](item, filter);
+      });
+    });
 
     return filteredArr;
   };
 
-  // функция очистки карты и обновления доступных объявлений после изменения значения любого фильтра
+  // функция очистки карты и повторной фильтрации объявлений после изменения значения любого фильтра (с устранением дребезга)
 
   var onFilterChange = window.debounce(function () {
     window.map.clearMap();

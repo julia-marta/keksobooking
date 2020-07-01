@@ -136,17 +136,18 @@
 
   setNonActiveMap();
 
-  // функция фильтрации полученных данных
+  // функция фильтрации полученных данных и отрисовки отфильтрованных меток
 
   var filterAds = function () {
     var filteredAds = window.filter.filterData(ads);
     window.pin.createPins(filteredAds);
   };
 
-  // успешное получение данных: сохранение в массив, отрисовка отфильтрованных меток, активация полей фильтра
+  // успешное получение данных: сохранение копии массива, перемешивание, фильтрация и отрисовка, активация полей фильтра
 
   var onSuccessLoad = function (data) {
-    ads = data;
+    var dataCopy = data.slice();
+    ads = window.main.shuffleArray(dataCopy);
     filterAds();
     setFilterState();
   };
