@@ -47,8 +47,8 @@
   var renderMapPin = function (advert) {
     var mapPin = mapPinTemplate.cloneNode(true);
 
-    mapPin.style.left = advert.location.x - window.data.mapPinWidth / 2 + 'px';
-    mapPin.style.top = advert.location.y - window.data.mapPinHeight + 'px';
+    mapPin.style.left = advert.location.x - window.map.mapPinWidth / 2 + 'px';
+    mapPin.style.top = advert.location.y - window.map.mapPinHeight + 'px';
     mapPin.querySelector('img').src = advert.author.avatar;
     mapPin.querySelector('img').alt = advert.offer.title;
 

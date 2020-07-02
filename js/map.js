@@ -2,13 +2,13 @@
 
 (function () {
 
-  var mapBorders = {
-    top: window.data.minCoordinateY,
-    right: window.data.maxCoordinateX,
-    bottom: window.data.maxCoordinateY,
-    left: window.data.minCoordinateX
-  };
+  var MAIN_MOUSE_BUTTON = 0;
+  var MIN_MAP_Y = 130;
+  var MAX_MAP_Y = 630;
 
+  var mapPinElement = document.querySelector('.map__pin');
+  var mapPinWidth = mapPinElement.offsetWidth;
+  var mapPinHeight = mapPinElement.offsetHeight;
   var mapPinMain = window.main.map.querySelector('.map__pin--main');
   var mapPinMainWidth = mapPinMain.offsetWidth;
   var mapPinMainHeight = mapPinMain.offsetHeight;
@@ -18,6 +18,14 @@
   var mapPinMainCenterDefaultY = mapPinMainDefaultY + mapPinMainHeight / 2;
   var fieldsets = window.main.form.querySelectorAll('fieldset');
   var addressField = window.main.form.querySelector('#address');
+
+  var MapBorder = {
+    TOP: MIN_MAP_Y - mapPinHeight,
+    RIGHT: window.main.map.offsetWidth - mapPinWidth / 2,
+    BOTTOM: MAX_MAP_Y - mapPinHeight,
+    LEFT: 0 - mapPinWidth / 2
+  };
+
   var ads = [];
 
   // функция отключения/активации полей фильтра
@@ -45,10 +53,12 @@
     addressField.value = addressX + ', ' + addressY;
   };
 
-  // обработчик клика левой кнопкой мышки на главном пине
+  // обработчик нажатия левой кнопкой мышки на главном пине
 
   var onPinMouseDown = function (evt) {
-    window.main.isMainMouseEvent(evt, activateMap);
+    if (evt.button === MAIN_MOUSE_BUTTON) {
+      activateMap();
+    }
   };
 
   // обработчик нажатия на Enter на главном пине
@@ -59,54 +69,56 @@
 
   // обработчик перемещения главного пина
 
-  var onPinMouseMove = function (evt) {
-    evt.preventDefault();
+  var onPinMousePull = function (evt) {
+    if (evt.button === MAIN_MOUSE_BUTTON) {
+      evt.preventDefault();
 
-    var startCoords = {
-      x: evt.clientX,
-      y: evt.clientY
-    };
-
-    var onMouseMove = function (moveEvt) {
-      moveEvt.preventDefault();
-
-      var shift = {
-        x: startCoords.x - moveEvt.clientX,
-        y: startCoords.y - moveEvt.clientY
+      var startCoords = {
+        x: evt.clientX,
+        y: evt.clientY
       };
 
-      startCoords = {
-        x: moveEvt.clientX,
-        y: moveEvt.clientY
+      var onMouseMove = function (moveEvt) {
+        moveEvt.preventDefault();
+
+        var shift = {
+          x: startCoords.x - moveEvt.clientX,
+          y: startCoords.y - moveEvt.clientY
+        };
+
+        startCoords = {
+          x: moveEvt.clientX,
+          y: moveEvt.clientY
+        };
+
+        var mapPinMainCoords = {
+          x: mapPinMain.offsetLeft - shift.x,
+          y: mapPinMain.offsetTop - shift.y
+        };
+
+        if (mapPinMainCoords.x >= MapBorder.LEFT && mapPinMainCoords.x <= MapBorder.RIGHT && mapPinMainCoords.y >= MapBorder.TOP && mapPinMainCoords.y <= MapBorder.BOTTOM) {
+          mapPinMain.style.left = mapPinMainCoords.x + 'px';
+          mapPinMain.style.top = mapPinMainCoords.y + 'px';
+        }
+
+        var addressCoords = {
+          x: mapPinMainCoords.x + (mapPinMainWidth / 2),
+          y: mapPinMainCoords.y + mapPinMainHeight
+        };
+
+        setAddressValue(addressCoords.x, addressCoords.y);
       };
 
-      var mapPinMainCoords = {
-        x: mapPinMain.offsetLeft - shift.x,
-        y: mapPinMain.offsetTop - shift.y
+      var onMouseUp = function (upEvt) {
+        upEvt.preventDefault();
+
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
       };
 
-      if (mapPinMainCoords.x >= mapBorders.left && mapPinMainCoords.x <= mapBorders.right && mapPinMainCoords.y >= mapBorders.top && mapPinMainCoords.y <= mapBorders.bottom) {
-        mapPinMain.style.left = mapPinMainCoords.x + 'px';
-        mapPinMain.style.top = mapPinMainCoords.y + 'px';
-      }
-
-      var addressCoords = {
-        x: mapPinMainCoords.x + (mapPinMainWidth / 2),
-        y: mapPinMainCoords.y + mapPinMainHeight
-      };
-
-      setAddressValue(addressCoords.x, addressCoords.y);
-    };
-
-    var onMouseUp = function (upEvt) {
-      upEvt.preventDefault();
-
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    }
   };
 
   // изначальное неактивное состояние карты: отключение полей фильтра и формы, заполнение поля адреса, добавление обработчиков на главный пин
@@ -117,24 +129,25 @@
     setAddressValue(mapPinMainCenterDefaultX, mapPinMainCenterDefaultY);
     mapPinMain.addEventListener('mousedown', onPinMouseDown);
     mapPinMain.addEventListener('keydown', onPinEnterPress);
-    mapPinMain.addEventListener('mousedown', onPinMouseMove);
+    mapPinMain.addEventListener('mousedown', onPinMousePull);
   };
 
   // установка изначального неактивного состояния карты
 
   setNonActiveMap();
 
-  // функция фильтрации полученных данных
+  // функция фильтрации полученных данных и отрисовки отфильтрованных меток
 
   var filterAds = function () {
-    var filteredAds = window.filter.filterByType(ads);
+    var filteredAds = window.filter.filterData(ads);
     window.pin.createPins(filteredAds);
   };
 
-  // успешное получение данных: сохранение в массив, отрисовка отфильтрованных меток, активация полей фильтра
+  // успешное получение данных: сохранение копии массива, перемешивание, фильтрация и отрисовка, активация полей фильтра
 
   var onSuccessLoad = function (data) {
-    ads = data;
+    var dataCopy = data.slice();
+    ads = window.main.shuffleArray(dataCopy);
     filterAds();
     setFilterState();
   };
@@ -182,6 +195,8 @@
   };
 
   window.map = {
+    mapPinWidth: mapPinWidth,
+    mapPinHeight: mapPinHeight,
     clearMap: clearMap,
     deactivateMap: deactivateMap,
     filterAds: filterAds

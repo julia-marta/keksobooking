@@ -88,7 +88,7 @@
     if (advert.offer.type.length === 0) {
       advertCardType.classList.add('hidden');
     } else {
-      advertCardType.textContent = window.data.typesKeys[advert.offer.type].ru;
+      advertCardType.textContent = window.form.typesMap[advert.offer.type].ru;
     }
 
     if (advert.offer.rooms === 0 && advert.offer.guests === 0) {

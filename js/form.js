@@ -17,6 +17,25 @@
   .content
   .querySelector('.error');
 
+  var typesMap = {
+    palace: {
+      ru: 'Дворец',
+      min: 10000
+    },
+    flat: {
+      ru: 'Квартира',
+      min: 1000
+    },
+    house: {
+      ru: 'Дом',
+      min: 5000
+    },
+    bungalo: {
+      ru: 'Бунгало',
+      min: 0
+    }
+  };
+
   var guestsInRooms = {
     1: ['1'],
     2: ['1', '2'],
@@ -27,8 +46,8 @@
   // функция проверки соответствия минимальной цены типу жилья
 
   var checkMinPrice = function (evt) {
-    priceInput.min = window.data.typesKeys[evt.target.value].min;
-    priceInput.placeholder = window.data.typesKeys[evt.target.value].min;
+    priceInput.min = typesMap[evt.target.value].min;
+    priceInput.placeholder = typesMap[evt.target.value].min;
   };
 
   // добавление обработчика выбора типа жилья
@@ -130,8 +149,8 @@
 
   var resetForm = function () {
     window.main.form.reset();
-    priceInput.min = window.data.typesKeys[typeSelect.value].min;
-    priceInput.placeholder = window.data.typesKeys[typeSelect.value].min;
+    priceInput.min = typesMap[typeSelect.value].min;
+    priceInput.placeholder = typesMap[typeSelect.value].min;
   };
 
   // добавление обработчика на кнопку очистки формы
@@ -142,6 +161,7 @@
   });
 
   window.form = {
+    typesMap: typesMap,
     resetForm: resetForm
   };
 })();
