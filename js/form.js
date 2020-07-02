@@ -149,6 +149,7 @@
 
   var resetForm = function () {
     window.main.form.reset();
+    window.photo.resetImages();
     priceInput.min = typesMap[typeSelect.value].min;
     priceInput.placeholder = typesMap[typeSelect.value].min;
   };
