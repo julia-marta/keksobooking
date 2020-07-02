@@ -8,13 +8,13 @@
   var photoInput = window.main.form.querySelector('.ad-form__upload input[type=file]');
   var photosContainer = window.main.form.querySelector('.ad-form__photo');
 
-  var createPhoto = function() {
+  var createPhoto = function () {
     var photo = document.createElement('img');
     photo.width = photosContainer.offsetWidth;
     photo.height = photosContainer.offsetHeight;
     photosContainer.appendChild(photo);
     return photo;
-  }
+  };
 
   var onImageLoad = function (evt) {
     var file = evt.target.files[0];
