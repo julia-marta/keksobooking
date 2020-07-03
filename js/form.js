@@ -113,7 +113,7 @@
   };
 
   var onSubmitForm = function (evt) {
-    window.upload.send(new FormData(window.main.form), onSuccessSubmit, onErrorSubmit);
+    window.upload.send(onSuccessSubmit, onErrorSubmit, new FormData(window.main.form));
     evt.preventDefault();
   };
 
