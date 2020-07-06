@@ -130,8 +130,7 @@
   };
 
   var onSuccessLoad = function (data) {
-    var dataCopy = data.slice();
-    ads = window.main.shuffleArray(dataCopy);
+    ads = data.slice();
     filterAds();
     setFieldsState(window.main.filter);
   };
