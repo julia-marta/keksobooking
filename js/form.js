@@ -13,9 +13,6 @@
   var successMessageTemplate = document.querySelector('#success')
     .content
     .querySelector('.success');
-  var errorMessageTemplate = document.querySelector('#error')
-  .content
-  .querySelector('.error');
 
   var typesMap = {
     palace: {
@@ -43,19 +40,12 @@
     100: ['0']
   };
 
-  // функция проверки соответствия минимальной цены типу жилья
-
   var checkMinPrice = function (evt) {
     priceInput.min = typesMap[evt.target.value].min;
     priceInput.placeholder = typesMap[evt.target.value].min;
   };
 
-  // добавление обработчика выбора типа жилья
-
   typeSelect.addEventListener('change', checkMinPrice);
-
-
-  // функции синхронизации полей выбора времени заезда и выезда
 
   var checkTimeIn = function () {
     checkoutInput.value = checkinInput.value;
@@ -65,12 +55,8 @@
     checkinInput.value = checkoutInput.value;
   };
 
-  // добавление обработчиков выбора времени заезда и выезда
-
   checkinInput.addEventListener('change', checkTimeIn);
   checkoutInput.addEventListener('change', checkTimeOut);
-
-  // функция проверки соответствия количества гостей количеству комнат
 
   var checkGuestsNumber = function () {
     if (guestsSelect.options.length > 0) {
@@ -86,66 +72,20 @@
     }
   };
 
-  // проверка соответствия количества гостей количеству комнат при активации страницы (до выбора пользователем)
-
   checkGuestsNumber();
-
-  // добавление обработчика выбора количества комнат
-
   roomsSelect.addEventListener('change', checkGuestsNumber);
 
-  // функция добавления сообщения о статусе отправки формы
-
-  var addMessage = function (template) {
-    var message = template.cloneNode(true);
-    window.main.mainPage.appendChild(message);
-
-    var removeMessage = function () {
-      window.main.mainPage.removeChild(message);
-
-      document.removeEventListener('keydown', onMessageEscPress);
-      document.removeEventListener('click', removeMessage);
-    };
-
-    var onMessageEscPress = function (evt) {
-      window.main.isEscEvent(evt, removeMessage);
-    };
-
-    document.addEventListener('keydown', onMessageEscPress);
-    document.addEventListener('click', removeMessage);
-
-    var messageCloseButton = message.querySelector('.error__button');
-
-    if (messageCloseButton) {
-      messageCloseButton.addEventListener('click', removeMessage);
-    }
-  };
-
-  // успешная отправка данных формы: добавление сообщения и деактивация карты
-
   var onSuccessSubmit = function () {
-    addMessage(successMessageTemplate);
-    window.map.deactivateMap();
+    window.map.addMessage(successMessageTemplate);
+    window.map.deactivate();
   };
-
-  // ошибка при отправке данных формы: добавление сообщения
-
-  var onErrorSubmit = function () {
-    addMessage(errorMessageTemplate);
-  };
-
-  // функция отправки данных формы на сервер
 
   var onSubmitForm = function (evt) {
-    window.upload.send(new FormData(window.main.form), onSuccessSubmit, onErrorSubmit);
+    window.upload.send(onSuccessSubmit, window.map.onError, new FormData(window.main.form));
     evt.preventDefault();
   };
 
-  // добавление обработчика на отправку формы
-
   window.main.form.addEventListener('submit', onSubmitForm);
-
-  // функция сброса данных формы
 
   var resetForm = function () {
     window.main.form.reset();
@@ -154,15 +94,14 @@
     priceInput.placeholder = typesMap[typeSelect.value].min;
   };
 
-  // добавление обработчика на кнопку очистки формы
-
   resetButton.addEventListener('click', function (evt) {
     evt.preventDefault();
-    window.map.deactivateMap();
+    window.map.deactivate();
   });
 
   window.form = {
     typesMap: typesMap,
-    resetForm: resetForm
+    clear: resetForm,
+
   };
 })();

@@ -3,14 +3,18 @@
 (function () {
   var PINS_COUNT = 5;
 
+  var MapPin = {
+    WIDTH: 50,
+    HEIGHT: 70
+  };
+
   var mapPinTemplate = document.querySelector('#pin')
     .content
     .querySelector('.map__pin');
   var mapPinsList = window.main.map.querySelector('.map__pins');
 
-  // функция показа и закрытия карточки для каждой метки
-
   var showCard = function (currentPin, advert) {
+    window.card.remove();
     var checkedPins = window.main.map.querySelectorAll('.map__pin');
     checkedPins.forEach(function (item) {
       if (!item.classList.contains('map__pin--main')) {
@@ -19,16 +23,8 @@
     });
     currentPin.classList.add('map__pin--active');
 
-    var openedCard = window.main.map.querySelector('.map__card');
-    if (openedCard) {
-      openedCard.remove();
-    }
-    var mapCard = window.card.createCard(advert);
+    var mapCard = window.card.create(advert);
     var cardCloseButton = mapCard.querySelector('.popup__close');
-
-    var onCardEscPress = function (evt) {
-      window.main.isEscEvent(evt, closeCard);
-    };
 
     var closeCard = function () {
       mapCard.remove();
@@ -36,19 +32,19 @@
       document.removeEventListener('keydown', onCardEscPress);
     };
 
-    cardCloseButton.addEventListener('click', function () {
-      closeCard();
-    });
+    var onCardEscPress = function (evt) {
+      window.main.isEscEvent(evt, closeCard);
+    };
+
+    cardCloseButton.addEventListener('click', closeCard);
     document.addEventListener('keydown', onCardEscPress);
   };
-
-  // функция создания метки + добавление обработчиков клика на этой метке (показ соответствующей карточки)
 
   var renderMapPin = function (advert) {
     var mapPin = mapPinTemplate.cloneNode(true);
 
-    mapPin.style.left = advert.location.x - window.map.mapPinWidth / 2 + 'px';
-    mapPin.style.top = advert.location.y - window.map.mapPinHeight + 'px';
+    mapPin.style.left = advert.location.x - MapPin.WIDTH / 2 + 'px';
+    mapPin.style.top = advert.location.y - MapPin.HEIGHT + 'px';
     mapPin.querySelector('img').src = advert.author.avatar;
     mapPin.querySelector('img').alt = advert.offer.title;
 
@@ -64,8 +60,6 @@
     return mapPin;
   };
 
-  // функция отрисовки 5 меток на карте
-
   var createPins = function (arr) {
     var takeNumber = arr.length > PINS_COUNT ? PINS_COUNT : arr.length;
     for (var i = 0; i < takeNumber; i++) {
@@ -73,8 +67,17 @@
     }
   };
 
+  var removePins = function () {
+    var pins = window.main.map.querySelectorAll('.map__pin');
+    pins.forEach(function (item) {
+      if (!item.classList.contains('map__pin--main')) {
+        mapPinsList.removeChild(item);
+      }
+    });
+  };
+
   window.pin = {
-    createPins: createPins,
-    mapPinsList: mapPinsList
+    create: createPins,
+    remove: removePins
   };
 })();

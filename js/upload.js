@@ -5,19 +5,16 @@
   var GET = 'GET';
   var POST = 'POST';
 
-  var statusCode = {
+  var StatusCode = {
     OK: 200
   };
 
-  var onData = function (method, url, data, onLoad, onError) {
-
+  var onData = function (onLoad, onError, data) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
-    xhr.open(method, url);
-    xhr.send(data);
 
     xhr.addEventListener('load', function () {
-      if (xhr.status === statusCode.OK) {
+      if (xhr.status === StatusCode.OK) {
         onLoad(xhr.response);
       } else {
         onError();
@@ -26,14 +23,18 @@
     xhr.addEventListener('error', function () {
       onError();
     });
+
+    if (data) {
+      xhr.open(POST, URL_TO_POST);
+      xhr.send(data);
+    } else {
+      xhr.open(GET, URL_TO_GET);
+      xhr.send();
+    }
   };
 
   window.upload = {
-    get: function (onLoad) {
-      onData(GET, URL_TO_GET, null, onLoad, null);
-    },
-    send: function (data, onLoad, onError) {
-      onData(POST, URL_TO_POST, data, onLoad, onError);
-    }
+    get: onData,
+    send: onData
   };
 })();

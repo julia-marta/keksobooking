@@ -18,8 +18,6 @@
     }
   };
 
-  // объект с функциями для каждого типа фильтра (проверка совпадения соответствующего свойства в объявлении со значением выбранного фильтра)
-
   var filterRules = {
     'housing-type': function (ad, filter) {
       return ad.offer.type === filter.value;
@@ -43,8 +41,6 @@
     }
   };
 
-  // функция фильтрации полученного массива: перебор всех фильтров и сравнение каждого элемента массива со значением этого фильтра с помощью функций из объекта с правилами
-
   var filterData = function (arr) {
     var filteredArr = arr.filter(function (item) {
       return filters.every(function (filter) {
@@ -55,18 +51,14 @@
     return filteredArr;
   };
 
-  // функция очистки карты и повторной фильтрации объявлений после изменения значения любого фильтра (с устранением дребезга)
-
   var onFilterChange = window.debounce(function () {
-    window.map.clearMap();
-    window.map.filterAds();
+    window.map.clear();
+    window.map.filterAdverts();
   });
-
-  // добавление обработчиков на все фильтры
 
   window.main.filter.addEventListener('change', onFilterChange);
 
   window.filter = {
-    filterData: filterData
+    decant: filterData
   };
 })();
