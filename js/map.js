@@ -36,7 +36,10 @@
   };
 
   var addressField = window.main.form.querySelector('#address');
-  var ads = [];
+  var errorMessageTemplate = document.querySelector('#error')
+    .content
+    .querySelector('.error');
+  var adverts = [];
 
   var setFieldsState = function (form) {
     [].forEach.call(form.elements, function (item) {
@@ -124,15 +127,46 @@
 
   setNonActiveMap();
 
-  var filterAds = function () {
-    var filteredAds = window.filter.decant(ads);
-    window.pin.create(filteredAds);
+  var addMessage = function (template) {
+    var message = template.cloneNode(true);
+    window.main.page.appendChild(message);
+
+    var removeMessage = function () {
+      window.main.page.removeChild(message);
+
+      document.removeEventListener('keydown', onMessageEscPress);
+      document.removeEventListener('click', removeMessage);
+    };
+
+    var onMessageEscPress = function (evt) {
+      window.main.isEscEvent(evt, removeMessage);
+    };
+
+    document.addEventListener('keydown', onMessageEscPress);
+    document.addEventListener('click', removeMessage);
+
+    var messageCloseButton = message.querySelector('.error__button');
+
+    if (messageCloseButton) {
+      messageCloseButton.addEventListener('click', removeMessage);
+    }
+  };
+
+  var filterAdverts = function () {
+    var filteredAdverts = window.filter.decant(adverts);
+    window.pin.create(filteredAdverts);
   };
 
   var onSuccessLoad = function (data) {
-    ads = data.slice();
-    filterAds();
+    adverts = data.slice().filter(function (item) {
+      return Object.keys(item.offer).length !== 0;
+    });
+    filterAdverts();
     setFieldsState(window.main.filter);
+  };
+
+  var onError = function () {
+    addMessage(errorMessageTemplate);
   };
 
   var activateMap = function () {
@@ -140,7 +174,7 @@
     window.main.form.classList.remove('ad-form--disabled');
     setFieldsState(window.main.form);
     setAddressValue(MainPinCenterDefaultCoord.X, MainPinDefaultCoord.Y + MainPin.HEIGHT + MainPin.TAIL);
-    window.upload.get(onSuccessLoad);
+    window.upload.get(onSuccessLoad, onError);
     mapPinMain.removeEventListener('mousedown', onPinMouseDown);
     mapPinMain.removeEventListener('keydown', onPinEnterPress);
   };
@@ -164,6 +198,8 @@
   window.map = {
     clear: clearMap,
     deactivate: deactivateMap,
-    filterAds: filterAds
+    filterAdverts: filterAdverts,
+    addMessage: addMessage,
+    onError: onError
   };
 })();

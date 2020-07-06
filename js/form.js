@@ -13,9 +13,6 @@
   var successMessageTemplate = document.querySelector('#success')
     .content
     .querySelector('.success');
-  var errorMessageTemplate = document.querySelector('#error')
-    .content
-    .querySelector('.error');
 
   var typesMap = {
     palace: {
@@ -78,42 +75,13 @@
   checkGuestsNumber();
   roomsSelect.addEventListener('change', checkGuestsNumber);
 
-  var addMessage = function (template) {
-    var message = template.cloneNode(true);
-    window.main.page.appendChild(message);
-
-    var removeMessage = function () {
-      window.main.page.removeChild(message);
-
-      document.removeEventListener('keydown', onMessageEscPress);
-      document.removeEventListener('click', removeMessage);
-    };
-
-    var onMessageEscPress = function (evt) {
-      window.main.isEscEvent(evt, removeMessage);
-    };
-
-    document.addEventListener('keydown', onMessageEscPress);
-    document.addEventListener('click', removeMessage);
-
-    var messageCloseButton = message.querySelector('.error__button');
-
-    if (messageCloseButton) {
-      messageCloseButton.addEventListener('click', removeMessage);
-    }
-  };
-
   var onSuccessSubmit = function () {
-    addMessage(successMessageTemplate);
+    window.map.addMessage(successMessageTemplate);
     window.map.deactivate();
   };
 
-  var onErrorSubmit = function () {
-    addMessage(errorMessageTemplate);
-  };
-
   var onSubmitForm = function (evt) {
-    window.upload.send(onSuccessSubmit, onErrorSubmit, new FormData(window.main.form));
+    window.upload.send(onSuccessSubmit, window.map.onError, new FormData(window.main.form));
     evt.preventDefault();
   };
 
@@ -133,6 +101,7 @@
 
   window.form = {
     typesMap: typesMap,
-    clear: resetForm
+    clear: resetForm,
+
   };
 })();

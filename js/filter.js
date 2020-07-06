@@ -53,7 +53,7 @@
 
   var onFilterChange = window.debounce(function () {
     window.map.clear();
-    window.map.filterAds();
+    window.map.filterAdverts();
   });
 
   window.main.filter.addEventListener('change', onFilterChange);
