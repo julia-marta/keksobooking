@@ -1,6 +1,11 @@
 'use strict';
 
 (function () {
+  var Numeral = {
+    SINGULAR: 1,
+    GENITIVE: [2, 3, 4],
+    PLURAL: [11, 12, 13, 14]
+  };
 
   var mapContainer = window.main.map.querySelector('.map__filters-container');
   var cardTemplate = document.querySelector('#card')
@@ -30,21 +35,21 @@
     return photos;
   };
 
-  var numDecline = function (number, singularform, genitiveform, pluralform) {
+  var numDecline = function (number, singular, genitive, plural) {
     var modulo = number % 10;
     var form;
     switch (true) {
-      case number >= 11 && number <= 14:
-        form = pluralform;
+      case Numeral.PLURAL.indexOf(number) >= 0:
+        form = plural;
         break;
-      case modulo === 1:
-        form = singularform;
+      case modulo === Numeral.SINGULAR:
+        form = singular;
         break;
-      case modulo === 2 || modulo === 3 || modulo === 4:
-        form = genitiveform;
+      case Numeral.GENITIVE.indexOf(modulo) >= 0:
+        form = genitive;
         break;
       default:
-        form = pluralform;
+        form = plural;
     }
 
     return number + ' ' + form;
