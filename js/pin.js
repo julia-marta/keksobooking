@@ -8,6 +8,12 @@
     HEIGHT: 70
   };
 
+  var getRandomInt = function (min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min;
+  };
+
   var mapPinTemplate = document.querySelector('#pin')
     .content
     .querySelector('.map__pin');
@@ -43,8 +49,8 @@
   var renderMapPin = function (advert) {
     var mapPin = mapPinTemplate.cloneNode(true);
 
-    mapPin.style.left = advert.location.x - MapPin.WIDTH / 2 + 'px';
-    mapPin.style.top = advert.location.y - MapPin.HEIGHT + 'px';
+    mapPin.style.left = getRandomInt(window.map.border.LEFT, window.map.border.RIGHT) - MapPin.WIDTH / 2 + 'px';
+    mapPin.style.top = getRandomInt(window.map.border.BOTTOM, window.map.border.TOP) - MapPin.HEIGHT + 'px';
     mapPin.querySelector('img').src = advert.author.avatar;
     mapPin.querySelector('img').alt = advert.offer.title;
 

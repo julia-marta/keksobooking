@@ -1,7 +1,7 @@
 'use strict';
 (function () {
-  var URL_TO_GET = 'https://javascript.pages.academy/keksobooking/data';
-  var URL_TO_POST = 'https://javascript.pages.academy/keksobooking';
+  var URL_TO_GET = 'https://24.javascript.pages.academy/keksobooking/data';
+  var URL_TO_POST = 'https://24.javascript.pages.academy/keksobooking/data';
   var GET = 'GET';
   var POST = 'POST';
 

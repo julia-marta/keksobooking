@@ -200,6 +200,7 @@
     deactivate: deactivateMap,
     filterAdverts: filterAdverts,
     addMessage: addMessage,
-    onError: onError
+    onError: onError,
+    border: MapBorder
   };
 })();

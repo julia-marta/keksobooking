@@ -23,11 +23,15 @@
       ru: 'Квартира',
       min: 1000
     },
+    hotel: {
+      ru: 'Отель',
+      min: 3000
+    },
     house: {
       ru: 'Дом',
       min: 5000
     },
-    bungalo: {
+    bungalow: {
       ru: 'Бунгало',
       min: 0
     }

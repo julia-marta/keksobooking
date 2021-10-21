@@ -34,9 +34,13 @@
     'housing-features': function (ad, filter) {
       var selectedFeatures = Array.from(filter.querySelectorAll('input:checked'));
       return selectedFeatures.every(function (item) {
-        return ad.offer.features.some(function (feature) {
-          return feature === item.value;
-        });
+        if (ad.offer.features) {
+          return ad.offer.features.some(function (feature) {
+            return feature === item.value;
+          });
+        } else {
+          return null;
+        }
       });
     }
   };

@@ -106,14 +106,14 @@
       advertCardTime.textContent = ((advert.offer.checkin.length !== 0) ? 'Заезд после ' + advert.offer.checkin : '') + ((advert.offer.checkout.length !== 0) ? ' выезд до ' + advert.offer.checkout : '');
     }
 
-    if (advert.offer.features.length === 0) {
+    if (!advert.offer.features || advert.offer.features.length === 0) {
       advertCardFeatures.classList.add('hidden');
     } else {
       advertCardFeatures.innerHTML = '';
       advertCardFeatures.appendChild(renderFeatures(advert));
     }
 
-    if (advert.offer.description.length === 0) {
+    if (!advert.offer.description || advert.offer.description.length === 0) {
       advertCardDescription.classList.add('hidden');
     } else {
       advertCardDescription.textContent = advert.offer.description;
